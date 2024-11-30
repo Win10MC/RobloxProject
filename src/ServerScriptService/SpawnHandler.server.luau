@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local Zones = Workspace:WaitForChild("Zones"):GetChildren()
@@ -78,6 +79,7 @@ local function SpawnBreakable(Zone)
                 newCoin.Position = position
                 newCoin.Parent = breakablesFolder
                 newCoin.CurrentHealth.Value = newCoin.TotalHealth.Value
+                CollectionService:AddTag(newCoin, "Breakable")
                 updateBreakable(newCoin)
             else
                 warn("Could not spawn a coin in zone:", Zone)

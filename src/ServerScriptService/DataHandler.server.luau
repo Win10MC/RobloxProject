@@ -1,5 +1,21 @@
 local DataStoreService = game:GetService("DataStoreService")
-local LeaderstatsDataStore = DataStoreService:GetDataStore("LeaderstatsDataStore")
+local DataStore = DataStoreService:GetDataStore("StatsDataStore")
+
+local function saveData(player)
+    local DataToSave = {
+        player.leaderstats.Cash.Value;
+        player.Stats.BreakingPower.Value;
+    }
+
+    local success, errorMessage = pcall(DataStore.SetAsync, DataStore, player.UserId, DataToSave)
+
+    if success then
+        print("Data has been saved!")
+    else
+        print("Data has not been saved!")
+        warn(errorMessage)
+    end
+end
 
 game.Players.PlayerAdded:Connect(function(Player)
 
@@ -10,28 +26,33 @@ game.Players.PlayerAdded:Connect(function(Player)
     Cash.Name = "Cash"
     Cash.Value = 0
 
+    local Stats = Instance.new("Folder", Player)
+    Stats.Name = "Stats"
+
+    local BreakingPower = Instance.new("IntValue", Stats)
+    BreakingPower.Name = "BreakingPower"
+    BreakingPower.Value = 1
+
     local Data
     local Success, ErrorMessage = pcall(function()
-        Data = LeaderstatsDataStore:GetAsync(Player.UserId)
+        Data = DataStore:GetAsync(Player.UserId)
     end)
-    if Success then
-        Cash.Value = Data
+    if Success and Data then
+        Cash.Value = Data[1]
+        BreakingPower.Value = Data[2]
         print("Data Loaded Successfully")
-    else
+	else
         print("Error Loading Data:")
         warn(ErrorMessage)
     end
 end)
 
 game.Players.PlayerRemoving:Connect(function(Player)
-    local Data = Player.leaderstats.Cash.Value
-    local Success, ErrorMessage = pcall(function()
-        LeaderstatsDataStore:SetAsync(Player.UserId, Data)
-    end)
-    if Success then
-        print("Data Saved Successfully")
-    else
-        print("Error Saving Data:")
-        warn(ErrorMessage)
+    saveData(Player)
+end)
+
+game:BindToClose(function()
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        task.spawn(saveData, player)
     end
 end)
